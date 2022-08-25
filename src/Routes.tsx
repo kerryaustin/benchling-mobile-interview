@@ -1,5 +1,6 @@
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React, {FC} from 'react';
+import {DnaDetail} from './screens/DnaDetail/DnaDetail';
 import {Home} from './screens/Home/Home';
 import {Splash} from './screens/Splash';
 
@@ -15,6 +16,7 @@ export const Routes: FC = () => {
           component={Home}
           name="Home"
         />
+        <MainStackNavigator.Screen component={DnaDetail} name="DnaDetail" />
       </MainStackNavigator.Group>
     </MainStackNavigator.Navigator>
   );

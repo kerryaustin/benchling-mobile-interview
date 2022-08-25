@@ -1,16 +1,22 @@
 /* eslint-disable react-native/no-inline-styles */
 import {useActor} from '@xstate/react';
-import {Box, Heading, Text, VStack} from 'native-base';
+import {Box, Heading, Input, Text, VStack} from 'native-base';
 import React, {FC, useCallback, useEffect, useRef} from 'react';
-import {FlatList, ListRenderItem, RefreshControl} from 'react-native';
+import {
+  FlatList,
+  ListRenderItem,
+  RefreshControl,
+  TouchableOpacity,
+} from 'react-native';
 import {useAppMachine} from '../../AppContext';
 import Lottie from 'lottie-react-native';
 import {DataItem, HomeModel} from './HomeMachine';
+import {AppModel} from '../../AppMachine';
 
 const HEADER_HEIGHT = 160;
 
 export const Home: FC = () => {
-  const [appState] = useAppMachine();
+  const [appState, appSend] = useAppMachine();
   console.log(appState.context.homeActor!);
   const [state, send] = useActor(appState.context.homeActor!);
 
@@ -30,23 +36,31 @@ export const Home: FC = () => {
     send(HomeModel.events.refresh());
   }, [send]);
 
-  const renderItemCb = useCallback<ListRenderItem<DataItem>>(({item}) => {
-    return (
-      <VStack
-        p="4"
-        backgroundColor="white"
-        borderBottomColor="gray.300"
-        borderBottomWidth={1}
-        borderBottomStyle="solid">
-        <Text fontSize="sm" fontWeight="medium">
-          {item.name}
-        </Text>
-        <Text fontSize="xs" fontWeight="light">
-          Population: {item.population}
-        </Text>
-      </VStack>
-    );
-  }, []);
+  const renderItemCb = useCallback<ListRenderItem<DataItem>>(
+    ({item}) => {
+      return (
+        <TouchableOpacity
+          onPress={() => {
+            appSend(
+              AppModel.events.viewDnaDetail(item.id, item.name, item.dnaBases),
+            );
+          }}>
+          <VStack
+            p="4"
+            backgroundColor="white"
+            borderBottomColor="gray.300"
+            borderBottomWidth={1}
+            borderBottomStyle="solid">
+            <Text fontSize="sm" fontWeight="medium">
+              {item.name}
+            </Text>
+          </VStack>
+        </TouchableOpacity>
+      );
+    },
+    [appSend],
+  );
+
   return (
     <Box flex={1} backgroundColor="white">
       <Box
@@ -92,7 +106,11 @@ export const Home: FC = () => {
             p="4"
             borderTopRightRadius={20}
             borderTopLeftRadius={20}>
-            <Heading fontWeight="medium">Planets</Heading>
+            <Input
+              value={state.context.query}
+              onChangeText={query => send(HomeModel.events.search(query))}
+              placeholder="Search"
+            />
           </Box>
         }
         ListFooterComponent={<Box backgroundColor="white" height={300} />}
